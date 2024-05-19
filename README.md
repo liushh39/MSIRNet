@@ -10,14 +10,22 @@ This is the official PyTorch codes for the paper
 ```
 # create new anaconda env
 conda create -n msir python=3.7.11
-source activate msir 
+conda activate msir 
 
 # install python dependencies
 pip3 install -r requirements.txt
 python setup.py develop
 ```
 
+
+## Dataset
+
+- Download the [dataset](https://pan.baidu.com/s/1d7bO9lZrbpbxoX-Zl7ub2w?pwd=lyc9).
+- Specify their path in the corresponding option file or extract it to the project root directory.
+
 ## Quick Inference
+- Download our [model](https://github.com/liushh39/MSIRNet/releases/download/v1.0.0/net_g_111250.pth)
+- Put the pretrained models in `experiments/`
 
 ```
 python inference_MSIRNet.py
@@ -25,17 +33,10 @@ python inference_MSIRNet.py
 
 ## Train the model
 
-### Preparation
-
-#### Dataset
-
-- Download the dataset.
-- Specify their path in the corresponding option file or extract it to the project root directory.
-
-#### Model preparation
+### Model preparation
 
 Before training, you need to
-- Download the pretrained HRP model: [generator](https://github.com/chaofengc/FeMaSR/releases/download/v0.1-pretrain_models/FeMaSR_HRP_model_g.pth), [discriminator](https://github.com/chaofengc/FeMaSR/releases/download/v0.1-pretrain_models/FeMaSR_HRP_model_d.pth) 
+- Download the pretrained HRP model: [generator](https://github.com/liushh39/MSIRNet/releases/download/v1.0.0/FeMaSR_HRP_model_g.pth), [discriminator](https://github.com/liushh39/MSIRNet/releases/download/v1.0.0/FeMaSR_HRP_model_d.pth) 
 - Put the pretrained models in `experiments/pretrained_models`
 - Specify their path in the corresponding option file.
 
