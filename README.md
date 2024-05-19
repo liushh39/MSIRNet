@@ -1,7 +1,6 @@
 # MSIRNet
 
-This is the official PyTorch codes for the paper  
-[Learning multi-granularity semantic interactive representation for joint low-light image enhancement and super-resolution](https://www.sciencedirect.com/science/article/pii/S1566253524002458)  
+This is the official PyTorch codes for the paper **Learning multi-granularity semantic interactive representation for joint low-light image enhancement and super-resolution**. [Paper](https://www.sciencedirect.com/science/article/pii/S1566253524002458)  
 
 ![framework_img](framework.png)
 
