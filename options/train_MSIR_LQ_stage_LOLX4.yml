@@ -1,0 +1,211 @@
+# general settings
+name: 015_LESNet17_7_LQ_stage_LOLX4_no_random-resize
+# name: debug_FeMaSR
+model_type: FeMaSRModel 
+scale: &upscale 4
+num_gpu: 1 # set num_gpu: 0 for cpu mode
+manual_seed: 0
+
+# CUDA_VISIBLE_DEVICES=2,3 screen python basicsr/train.py -opt options/train_FeMaSR_LQ_stage_LOLX4.yml
+
+# dataset and data loader settings
+datasets:
+  train:
+    name: General_Image_Train
+    # type: BSRGANTrainDataset 
+    # dataroot_gt: ../datasets/HQ_sub
+    type: PairedImageDataset  
+    dataroot_gt: dataset/LOL_SR/train/high/
+    dataroot_lq: dataset/LOL_SR/train/lowX4/
+    dataroot_mask_grid1: dataset/LOL_SR/train/lowX4_HE_BM3D_masks/grid8
+    dataroot_mask_grid2: dataset/LOL_SR/train/lowX4_HE_BM3D_masks/grid16
+    dataroot_mask_grid3: dataset/LOL_SR/train/lowX4_HE_BM3D_masks/grid32
+    io_backend:
+      type: disk
+ 
+    gt_size: 256
+    use_resize_crop: true
+    use_flip: true
+    use_rot: true
+
+    # data loader
+    use_shuffle: true
+    batch_size_per_gpu: &bsz 8 
+    num_worker_per_gpu: 6
+    dataset_enlarge_ratio: 1
+
+    prefetch_mode: cpu
+    num_prefetch_queue: *bsz
+
+  val:
+    name: General_Image_Valid
+    type: PairedImageDataset
+    dataroot_gt: dataset/LOL_SR/test/high/
+    dataroot_lq: dataset/LOL_SR/test/lowX4/
+    dataroot_mask_grid1: dataset/LOL_SR/test/lowX4_HE_BM3D_masks/grid8
+    dataroot_mask_grid2: dataset/LOL_SR/test/lowX4_HE_BM3D_masks/grid16
+    dataroot_mask_grid3: dataset/LOL_SR/test/lowX4_HE_BM3D_masks/grid32
+    # crop_eval_size: 384 
+    io_backend:
+      type: disk
+
+# network structures
+network_g:
+  type: LESNet17
+  gt_resolution: 256
+  norm_type: 'gn'
+  act_type: 'silu'
+  scale_factor: *upscale
+  codebook_params: # has to order from low to high
+    - [32, 1024, 512]
+
+  LQ_stage: true
+  frozen_module_keywords: ['quantize', 'decoder', 'after_quant_group', 'out_conv']
+
+network_hq:
+  type: FeMaSRNet
+  gt_resolution: 256
+  norm_type: 'gn'
+  act_type: 'silu'
+  scale_factor: *upscale
+  codebook_params: # has to order from low to high
+    - [32, 1024, 512]
+
+  LQ_stage: true
+  frozen_module_keywords: ['quantize', 'decoder', 'after_quant_group', 'out_conv']
+
+network_d:
+  type: UNetDiscriminatorSN 
+  num_in_ch: 3
+
+# path
+path:
+  pretrain_network_hq: https://github.com/chaofengc/FeMaSR/releases/download/v0.1-pretrain_models/FeMaSR_HRP_model_g.pth 
+  pretrain_network_g: ~
+  pretrain_network_d: https://github.com/chaofengc/FeMaSR/releases/download/v0.1-pretrain_models/FeMaSR_HRP_model_d.pth
+  strict_load: false 
+  # resume_state: ~
+
+
+# training settings
+train:
+  optim_g:
+    type: Adam
+    lr: !!float 1e-4
+    weight_decay: 0
+    betas: [0.9, 0.99]
+  optim_d:
+    type: Adam
+    lr: !!float 4e-4
+    weight_decay: 0
+    betas: [0.9, 0.99]
+
+  scheduler:
+    type: MultiStepLR
+    # milestones: [50000, 100000, 200000, 300000]
+    # gamma: 1
+    milestones: [50000, 100000, 150000, 200000, 250000, 300000, 350000] #[60000, 100000] #[125000, 200000, 225000, 237500] #[35000, 70000, 90000, 110000]
+    gamma: 1 #1 
+
+  total_iter: 500000 #250000
+  warmup_iter: -1  # no warm up
+
+  # losses
+  pixel_opt:
+    type: L1Loss
+    loss_weight: 1.0 
+    reduction: mean
+
+#  pixel_opt:
+#    type: CharbonnierLoss
+#    loss_weight: 1.0
+#    reduction: mean
+#    eps: 0.001
+
+#  perceptual_opt:
+#    type: LPIPSLoss
+#    loss_weight: !!float 1.0
+
+  perceptual_vgg_opt:
+    type: PerceptualLoss
+    layer_weights:
+      # before relu
+      'conv1_2': 1
+      'conv2_2': 1
+      'conv3_4': 1
+      'conv4_4': 1
+    vgg_type: vgg19
+    use_input_norm: true
+    perceptual_weight: 1  #0.01
+    style_weight: 0
+    range_norm: true
+    criterion: l1
+    
+  gan_opt:
+    type: GANLoss
+    gan_type: hinge
+    real_label_val: 1.0
+    fake_label_val: 0.0
+    loss_weight: 0.1
+
+  codebook_opt:
+    loss_weight: 1.0 #1.0
+  
+  semantic_opt:
+    loss_weight: 0.1 
+
+  net_d_iters: 1
+  net_d_init_iters: !!float 0 
+
+# validation settings·
+val:
+  val_freq: !!float 1.25e3
+  save_img: true
+
+  key_metric: ssim #psnr
+  metrics:
+    psnr: # metric name, can be arbitrary
+      type: calculate_psnr_pyiqa
+      crop_border: 0
+      test_y_channel: True
+    ssim:
+      type: calculate_ssim_pyiqa
+      crop_border: 0
+      test_y_channel: True
+#    lpips:
+#      type: calculate_lpips
+#      crop_border: 0
+#      test_y_channel: false
+
+
+#  key_metric: psnr
+#  metrics:
+#    psnr: # metric name, can be arbitrary
+#      type: psnr
+#      crop_border: 4
+#      test_y_channel: true
+#    ssim:
+#      type: ssim
+#      crop_border: 4
+#      test_y_channel: true
+
+
+# logging settings
+logger:
+  print_freq: 100
+  save_checkpoint_freq: !!float 1.25e3
+  save_latest_freq: !!float 1.25e3
+  show_tf_imgs_freq: !!float 1e3
+  use_tb_logger: true
+
+# wandb:
+    # project: ESRGAN
+    # resume_id: ~
+
+# dist training settings
+dist_params:
+  backend: nccl
+  port: 16500 #29500
+
+find_unused_parameters: true
+
