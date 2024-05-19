@@ -1,0 +1,8 @@
+Training:
+见options
+
+
+Testing:
+
+FeMaSR使用 inference_femasr.py
+MSIRNet使用 inference_MSIRNet.py
