@@ -1,8 +1,23 @@
 <h1 align="center">MSIRNet: Learning multi-granularity semantic interactive representation for joint low-light image enhancement and super-resolution</h1>
 
-This is the official PyTorch codes for the paper **Learning multi-granularity semantic interactive representation for joint low-light image enhancement and super-resolution**. [Paper](https://www.sciencedirect.com/science/article/pii/S1566253524002458)  
+<div align='center'>
+    <a target='_blank'><strong>Jing Ye</strong></a><sup> 1</sup>&emsp;
+    <a href='https://github.com/liushh39' target='_blank'><strong>Shenghao Liu</strong></a><sup> 1</sup>&emsp;
+    <a target='_blank'><strong>Changzhen Qiu</strong></a><sup> 1</sup>&emsp;
+    <a target='_blank'><strong>Zhiyong Zhang</strong></a><sup> 1†</sup>&emsp;
+    
+</div>
 
-![framework_img](framework.png)
+<div align='center'>
+    <sup>1 </sup>Sun Yat-Sen University&emsp; <small><sup>†</sup> Corresponding author</small>;
+</div>
+
+<h1 align="center"><img src="https://github.com/liushh39/MSIRNet/blob/main/framework.png" width="1000"></h1>
+
+## Introduction 📖
+This repo, named **MSIRNet**, contains the official PyTorch implementation of our paper [Learning multi-granularity semantic interactive representation for joint low-light image enhancement and super-resolution](https://www.sciencedirect.com/science/article/pii/S1566253524002458).
+We are actively updating and improving this repository. If you find any bugs or have suggestions, welcome to raise issues or submit pull requests (PR) 💖.
+
 
 ## Dependencies and Installation
 
